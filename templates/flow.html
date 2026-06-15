@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}入居手順｜宅ラーク{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('property_detail', property_id=prop.id) }}">← 物件詳細に戻る</a>
+<h1>⑤ 入居までの手順（{{ prop.deal_type }}）</h1>
+<p class="lead">{{ prop.name }} は「{{ prop.deal_type }}」物件です。入居（引き渡し）までの手続きは以下のとおりです。</p>
+
+<ol class="flow-steps">
+  {% for s in steps %}
+  <li class="card flow-step">
+    <span class="step-num">{{ s.step }}</span>
+    <div>
+      <h3>{{ s.title }}</h3>
+      <p>{{ s.detail }}</p>
+    </div>
+  </li>
+  {% endfor %}
+</ol>
+{% endblock %}

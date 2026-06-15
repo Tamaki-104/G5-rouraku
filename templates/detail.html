@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ prop.name }}｜宅ラーク{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('proposals') }}">← 物件提案に戻る</a>
+<h1>③ {{ prop.name }}</h1>
+
+<div class="detail-grid">
+  <img src="{{ prop.image_url }}" alt="{{ prop.name }}" class="detail-img">
+  <div class="card">
+    {% if score is not none %}<p class="score-big">あなたの条件との適合度：<strong>{{ score }}%</strong></p>{% endif %}
+    <table class="spec">
+      <tr><th>エリア</th><td>{{ prop.area }}</td></tr>
+      <tr><th>家賃</th><td>{{ '{:,}'.format(prop.rent) }}円</td></tr>
+      <tr><th>間取り</th><td>{{ prop.layout }}</td></tr>
+      <tr><th>駅からの距離</th><td>徒歩{{ prop.station_minutes }}分</td></tr>
+      <tr><th>建物種別</th><td>{{ prop.building_type }}</td></tr>
+      <tr><th>ペット</th><td>{{ '可' if prop.pet_allowed else '不可' }}</td></tr>
+      <tr><th>取引種別</th><td>{{ prop.deal_type }}</td></tr>
+    </table>
+    <p class="desc">{{ prop.description }}</p>
+  </div>
+</div>
+
+<section class="card analyze-box">
+  <h2>課題・懸念点のAI分析</h2>
+  <p class="lead">この物件があなたの希望とどう違うか、注意点をAIが分析します。</p>
+  <button id="analyze-btn" class="btn primary" data-id="{{ prop.id }}">課題・懸念点を確認する</button>
+  <pre id="analysis-result" class="analysis hidden"></pre>
+</section>
+
+<section class="card">
+  <h2>⑤ 入居までの手順</h2>
+  <a class="btn ghost" href="{{ url_for('move_in_flow', property_id=prop.id) }}">入居までのフローを確認する（{{ prop.deal_type }}）</a>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/detail.js') }}"></script>
+{% endblock %}
