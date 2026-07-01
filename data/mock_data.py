@@ -10,6 +10,9 @@ Supabase へ移行しても同じ構造を再現できる。
   入力情報                      1 ── N 提案管理 (Propose)
   住宅情報                      1 ── N 提案管理 / 課題分析 (Analyze)
   AIチャットボット (Chat)       … 独立
+
+作成    : チーム労楽
+Copyright (c) 2026 チーム労楽. All rights reserved.
 """
 
 # ── 物件条件（Property condition）────────────────────────────────
