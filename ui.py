@@ -1,19 +1,12 @@
 """
-画面テンプレート（HTML / CSS / JavaScript）を Python 内に集約したモジュール。
+画面(HTML/CSS/JS)を丸ごとPythonの文字列として持つモジュール。
 
-概要:
-    別ファイルの .html / .css / .js を持たず、すべて Python の文字列として保持する。
-    app.py で Jinja の DictLoader に TEMPLATES を渡すことで、テンプレート継承
-    （{% extends "base.html" %}）もそのまま機能する。CSS / JS はブラウザに配信
-    されるが、リポジトリのソースはすべて .py に統一される（言語Python統一の方針）。
+.html/.css/.js を別ファイルにせず全部ここに集約している。理由は言語をPythonに
+統一するため。app.py が Jinja の DictLoader に TEMPLATES を渡すので、
+{% extends "base.html" %} のテンプレート継承も普通に効く。
+CSS/JS は _BASE と _DETAIL の中に {% raw %} で埋め込んで配信する。
 
-構成:
-    _CSS / _CHAT_JS / _DETAIL_JS … 見た目・挙動の素材（base/detailに埋め込む）
-    _BASE / _INDEX / _PROPOSALS / _DETAIL / _FLOW … 各画面のHTML
-    TEMPLATES … 上記をテンプレート名で引けるようにした辞書（app.pyが読み込む）
-
-作成    : チーム労楽
-Copyright (c) 2026 チーム労楽. All rights reserved.
+作成: チーム労楽  /  (c) 2026 チーム労楽
 """
 
 # ------------------------------------------------------------------
