@@ -1,0 +1,5 @@
+# GitHub の言語統計を Python 中心に保つ設定。
+# HTML/CSS/JS は ui.py に統合済み。残る非Pythonファイルを言語カウントから除外する。
+*.sql  linguist-detectable=false
+*.json linguist-detectable=false
+*.md   linguist-documentation

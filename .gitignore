@@ -6,3 +6,9 @@ venv/
 .DS_Store
 *.log
 .claude/settings.local.json
+.claude/launch.json
+.vercel-token
+.vercel/
+
+.vercel
+.env*

@@ -15,12 +15,18 @@ API:
 """
 from flask import (Flask, render_template, request, redirect,
                    url_for, session, jsonify)
+from jinja2 import DictLoader
 
 import config
+import ui
 from services import repository, matching, ai
 
-app = Flask(__name__)
+# static_folder=None: 静的ファイルは持たず、CSS/JS は ui.py 内で HTML に埋め込む
+app = Flask(__name__, static_folder=None)
 app.secret_key = config.FLASK_SECRET_KEY  # 本番は環境変数 FLASK_SECRET_KEY で設定
+
+# テンプレートは .html ファイルではなく ui.py 内の文字列（DictLoader）から読む
+app.jinja_env.loader = DictLoader(ui.TEMPLATES)
 
 
 @app.context_processor
@@ -171,4 +177,7 @@ def move_in_flow(property_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="127.0.0.1", port=5000)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    # use_reloader=False: プレビュー/サーバ管理時に子プロセスが残らないようにする
+    app.run(debug=True, use_reloader=False, host="127.0.0.1", port=port)
