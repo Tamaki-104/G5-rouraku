@@ -24,7 +24,9 @@ USE_MOCK = _as_bool(os.getenv("USE_MOCK"), default=True)
 FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "taku-raku-dev-secret")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+# 既定は無料枠が広く軽量・高速な flash-lite(2.5系)。上位品質が欲しければ環境変数で
+# GEMINI_MODEL=gemini-2.5-flash に切り替え可(ただし無料枠の1日上限は小さめ)。
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")

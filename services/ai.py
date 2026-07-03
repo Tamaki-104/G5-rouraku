@@ -85,7 +85,6 @@ def _mock_chat(question: str, context: dict) -> str:
     """物件がらみの質問かをキーワードでざっくり判定し、話題別の定型文を返す。"""
     keywords = ["物件", "家賃", "予算", "間取り", "エリア", "駅", "ペット",
                 "賃貸", "購入", "マッチ", "条件", "引越", "入居", "おすすめ", "家"]
-    # ひとつも引っかからなければ守備範囲外として案内する。
     if not any(k in question for k in keywords):
         return "申し訳ありません。私は物件探しに関するご質問にお答えするAIコンシェルジュです。物件・条件・入居手続きなどについてお尋ねください。"
 
@@ -100,24 +99,84 @@ def _mock_chat(question: str, context: dict) -> str:
 # 専用ライブラリは入れず、REST APIを requests で直接叩く。依存を増やさず
 # Python統一のまま軽く保つため。キーの受け渡しはURLパラメータ(Geminiの仕様)。
 
-def _gemini_generate(prompt: str) -> str:
-    """組み立て済みプロンプトをGeminiに投げ、本文テキストだけ抜き出して返す。"""
+# 1回の生成で許すトークンの初期上限と、途切れたときに取り直す最大回数。
+_BASE_MAX_TOKENS = 1024
+_MAX_ATTEMPTS = 3
+
+
+def _join_parts(candidate: dict) -> str:
+    """候補が複数partに分かれている場合があるので、テキストを全部つないで返す。"""
+    parts = (candidate.get("content") or {}).get("parts") or []
+    return "".join(p.get("text", "") for p in parts)
+
+
+def _trim_to_sentence(text: str) -> str:
+    """末尾が文の途中で切れているとき、最後の句点(。！？等)までで綺麗に打ち切る。"""
+    for i in range(len(text) - 1, -1, -1):
+        if text[i] in "。．！？!?":
+            return text[:i + 1]
+    return text
+
+
+def _gemini_generate(prompt: str, max_tokens: int = _BASE_MAX_TOKENS, attempt: int = 1) -> str:
+    """プロンプトをGeminiに投げ、本文テキストを返す。途切れたら再帰で取り直す。
+
+    2.5系は既定の「思考」がトークンを消費し、その分 maxOutputTokens が本文に足りず
+    途中で切れることがある。そこで thinkingBudget=0 で思考を止め、枠を全部本文に回す。
+    それでも MAX_TOKENS で打ち切られた/本文が空だった場合は、上限を倍にして
+    最大 _MAX_ATTEMPTS 回まで取り直す。最後まで途切れるなら最後の句点で締める。
+    通信断やレート制限・5xxのような一時障害も、少し待って同じく取り直す。
+    """
     import requests
+    import time
     url = (f"https://generativelanguage.googleapis.com/v1beta/models/"
            f"{config.GEMINI_MODEL}:generateContent")
-    resp = requests.post(
-        url,
-        params={"key": config.GEMINI_API_KEY},
-        json={
-            "contents": [{"parts": [{"text": prompt}]}],
-            # temperature=多様性、maxOutputTokens=長くなりすぎ防止。
-            "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1024},
-        },
-        timeout=30,  # 返ってこないまま画面を待たせ続けない。
-    )
-    resp.raise_for_status()
-    # 応答テキストは candidates[0].content.parts[0].text に入っている。
-    return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+    try:
+        resp = requests.post(
+            url,
+            params={"key": config.GEMINI_API_KEY},
+            json={
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "maxOutputTokens": max_tokens,
+                    # 思考にトークンを使わせず、本文が途中で切れるのを防ぐ。
+                    "thinkingConfig": {"thinkingBudget": 0},
+                },
+            },
+            timeout=30,  # 返ってこないまま画面を待たせ続けない。
+        )
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        # 通信断や5xxのような「すぐ直る一時障害」は少し待って取り直す。
+        # 429(無料枠の超過)は数十秒待たないと回復せず短時間の再試行は無意味なので、
+        # 即座に諦めて呼び出し元のモック応答へ回す。恒久的な4xxも同様。
+        status = getattr(e.response, "status_code", None)
+        transient = status is None or status in (500, 502, 503, 504)
+        if transient and attempt < _MAX_ATTEMPTS:
+            time.sleep(0.8 * attempt)  # 軽くバックオフしてから再試行
+            return _gemini_generate(prompt, max_tokens, attempt + 1)
+        raise
+
+    data = resp.json()
+
+    candidates = data.get("candidates") or []
+    if not candidates:
+        # 安全フィルタ等で候補ゼロ。数回だけ試し、それでもダメなら例外にして呼び出し元でモックへ。
+        if attempt < _MAX_ATTEMPTS:
+            return _gemini_generate(prompt, max_tokens, attempt + 1)
+        raise RuntimeError("Geminiが応答を返しませんでした")
+
+    candidate = candidates[0]
+    truncated = candidate.get("finishReason") == "MAX_TOKENS"
+    text = _join_parts(candidate).strip()
+
+    # 途中で切れた or 本文が空 → 枠を倍にして取り直す(再帰)。
+    if (truncated or not text) and attempt < _MAX_ATTEMPTS:
+        return _gemini_generate(prompt, max_tokens * 2, attempt + 1)
+
+    # 再試行し尽くしてもまだ途切れているなら、最後の句点までで整えて返す。
+    return _trim_to_sentence(text) if truncated else text
 
 
 def _gemini_analyze(condition: dict, prop: dict) -> str:
@@ -125,7 +184,9 @@ def _gemini_analyze(condition: dict, prop: dict) -> str:
     prompt = (
         "あなたは不動産アドバイザーです。以下のユーザー希望条件と物件情報を比較し、"
         "希望との乖離点・住む上での注意事項・懸念点を、日本語で簡潔な箇条書きにして示してください。"
-        "物件データに無い情報は推測で断定しないこと。\n\n"
+        "物件データに無い情報は推測で断定しないこと。"
+        # 長さの目安を明示して、冗長にも短すぎにもならないようにする。
+        "全体で300字程度、箇条書きは合計5項目以内に収め、必ず文を最後まで完結させてください。\n\n"
         f"【ユーザーの希望条件】\n{condition}\n\n【物件情報】\n{prop}\n"
     )
     return _gemini_generate(prompt)
@@ -136,7 +197,9 @@ def _gemini_chat(question: str, context: dict) -> str:
     prompt = (
         "あなたは不動産探しを手伝うAIコンシェルジュです。物件・条件・入居手続きに関する"
         "質問に、日本語で丁寧かつ簡潔に回答してください。物件探しと無関係な質問には、"
-        "対象外である旨を案内してください。\n\n"
+        "対象外である旨を案内してください。"
+        # 長さの目安を明示。会話なので分析より短めに。
+        "回答は200〜300字程度で簡潔にまとめ、必ず文を最後まで完結させてください。\n\n"
         f"【参考情報（ユーザーの現在の希望条件など）】\n{context}\n\n"
         f"【ユーザーの質問】\n{question}\n"
     )

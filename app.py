@@ -109,15 +109,24 @@ def proposals():
     if not condition:
         return redirect(url_for("index"))  # 直リンクで条件なしなら入力へ戻す
 
-    ranked = matching.match_properties(condition, repository.get_all_properties())
-    # 40%以上を「出す価値あり」とみなす。1件も無ければ条件を緩めた候補として全件見せ、
+    all_props = repository.get_all_properties()
+    ranked = matching.match_properties(condition, all_props)
+    # 希望エリアが最優先条件のため、県外(適合率0%)の物件はそもそも一覧に出さない。
+    ranked = [p for p in ranked if not p["out_of_area"]]
+    # 40%以上を「出す価値あり」とみなす。1件も無ければ条件を緩めた候補として残りを見せ、
     # 画面には relaxed で「緩和した候補です」と一言添えさせる。
     matched = [p for p in ranked if p["score"] >= 40]
-    relaxed = not matched
+    relaxed = bool(ranked) and not matched
     display = matched or ranked
 
+    # 入力エリアのうち物件データに無い表記(誤字・「区」抜けなど)を拾い、注意喚起に使う。
+    known_areas = {p["area"] for p in all_props}
+    unknown_areas = [a for a in matching.split_multi(condition.get("area", ""))
+                     if a not in known_areas]
+
     return render_template("proposals.html", condition=condition,
-                           properties=display, relaxed=relaxed)
+                           properties=display, relaxed=relaxed,
+                           unknown_areas=unknown_areas)
 
 
 # --- ③ 物件詳細 ＋ 課題分析 ---

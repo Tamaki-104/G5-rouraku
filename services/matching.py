@@ -16,21 +16,48 @@ WEIGHTS = {
     "pet": 10,
 }
 
+# エリア名 -> 都道府県。県外判定に使う。
+# 物件提案では希望エリアを最優先とし、入力エリアと違う県の物件は適合率0%で足切りする。
+# ※サンプルデータの架空区(池袋区・秋葉原区)も便宜上ここで都道府県に紐付けておく。
+AREA_PREFECTURES = {
+    "渋谷区": "東京都",
+    "新宿区": "東京都",
+    "池袋区": "東京都",
+    "秋葉原区": "東京都",
+    "横浜区": "神奈川県",
+}
+
+
+def out_of_prefecture(cond_area: str, prop_area: str) -> bool:
+    """物件が、希望エリアから見て「県外」かどうか。
+
+    入力エリアそれぞれの都道府県を集め、物件の都道府県がそのどれにも
+    入っていなければ県外。入力・物件のどちらかから都道府県が特定できない
+    場合は判定不能なので県外扱いにはしない(誤って全滅させないため)。
+    """
+    wanted_prefs = {AREA_PREFECTURES[a] for a in split_multi(cond_area)
+                    if a in AREA_PREFECTURES}
+    prop_pref = AREA_PREFECTURES.get(prop_area)
+    if not wanted_prefs or prop_pref is None:
+        return False
+    return prop_pref not in wanted_prefs
+
+
+def split_multi(value: str) -> list:
+    """"新宿区/渋谷区" のような「/」区切りの複数指定を分解する(全角／も半角に寄せる)。"""
+    if not value:
+        return []
+    return [v.strip() for v in value.replace("／", "/").split("/") if v.strip()]
+
 
 def _area_match(cond_area: str, prop_area: str) -> bool:
-    """希望エリアに物件エリアが入っているか。希望は "新宿区/渋谷区" のような複数指定もあり。"""
-    if not cond_area:
-        return False
-    wanted = [a.strip() for a in cond_area.replace("／", "/").split("/") if a.strip()]
-    return prop_area in wanted
+    """希望エリア(複数可)に物件エリアが含まれるか。"""
+    return prop_area in split_multi(cond_area)
 
 
 def _layout_match(cond_layout: str, prop_layout: str) -> bool:
-    """希望間取りに物件の間取りが入っているか。大文字化して 1ldk と 1LDK の揺れを吸収する。"""
-    if not cond_layout:
-        return False
-    wanted = [l.strip().upper() for l in cond_layout.replace("／", "/").split("/") if l.strip()]
-    return prop_layout.upper() in wanted
+    """希望間取り(複数可)に物件の間取りが含まれるか。1ldk/1LDK の揺れは大文字化で吸収。"""
+    return prop_layout.upper() in [x.upper() for x in split_multi(cond_layout)]
 
 
 def calculate_score(condition: dict, prop: dict) -> dict:
@@ -43,7 +70,6 @@ def calculate_score(condition: dict, prop: dict) -> dict:
     want_min = condition.get("station_minutes")
     want_pet = condition.get("pet_allowed")
 
-    # 各条件を満たすか。満たした項目の重みだけを足していく。
     hit = {
         "area": _area_match(condition.get("area", ""), prop["area"]),
         "budget": budget is not None and prop["rent"] <= budget,
@@ -53,7 +79,14 @@ def calculate_score(condition: dict, prop: dict) -> dict:
         "pet": (not want_pet) or prop["pet_allowed"],
     }
     score = sum(WEIGHTS[key] for key, ok in hit.items() if ok)
-    return {"score": score, "breakdown": hit}
+
+    # 希望エリアは最重要条件。県外の物件は他の項目がいくら合っていても
+    # 提案する意味がないので、適合率を強制的に0%へ落とす(一覧からも除外される)。
+    out_of_area = out_of_prefecture(condition.get("area", ""), prop["area"])
+    if out_of_area:
+        score = 0
+
+    return {"score": score, "breakdown": hit, "out_of_area": out_of_area}
 
 
 def rank_label(score: int) -> str:
@@ -74,6 +107,7 @@ def match_properties(condition: dict, properties: list) -> list:
         item = dict(prop)
         item["score"] = calc["score"]
         item["breakdown"] = calc["breakdown"]
+        item["out_of_area"] = calc["out_of_area"]
         item["rank"] = rank_label(calc["score"])
         results.append(item)
 

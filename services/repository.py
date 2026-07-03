@@ -74,7 +74,6 @@ def get_all_properties():
         rows = _rest_get("properties", {"select": "*,property_conditions(*)"})
         return [_flatten(r, r.get("property_conditions")) for r in rows]
 
-    # モック時は物件条件をID索引にしてから結合する。
     by_id = {c["id"]: c for c in PROPERTY_CONDITIONS}
     return [_flatten(p, by_id.get(p["property_condition_id"])) for p in PROPERTIES]
 

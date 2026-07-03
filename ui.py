@@ -531,8 +531,14 @@ _PROPOSALS = """{% extends "base.html" %}
   <a class="btn ghost small" href="{{ url_for('index') }}">条件を変更</a>
 </div>
 
-{% if relaxed %}
+{% if unknown_areas %}
+<p class="notice">「{{ unknown_areas|join('、') }}」に一致する物件が見つかりませんでした。入力した内容を変更するか、正しい表記になっているか確かめてください。</p>
+{% elif relaxed %}
 <p class="notice">条件に完全合致する物件が見つかりませんでした。条件を緩和した候補を適合度順に表示します。</p>
+{% endif %}
+
+{% if not properties %}
+<p class="notice">希望エリアの都道府県内に表示できる物件がありません。エリアを変更して再検索してください。</p>
 {% endif %}
 
 <div class="property-list">
@@ -641,7 +647,6 @@ _FLOW = """{% extends "base.html" %}
 _BASE = _BASE.replace("__CSS__", _CSS).replace("__CHAT_JS__", _CHAT_JS)
 _DETAIL = _DETAIL.replace("__DETAIL_JS__", _DETAIL_JS)
 
-# Jinja DictLoader に渡すテンプレート辞書
 TEMPLATES = {
     "base.html": _BASE,
     "index.html": _INDEX,
