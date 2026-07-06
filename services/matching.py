@@ -61,10 +61,11 @@ def _layout_match(cond_layout: str, prop_layout: str) -> bool:
 
 
 def calculate_score(condition: dict, prop: dict) -> dict:
-    """1物件の適合度を計算し、{"score", "breakdown"} を返す。
+    """1物件の適合度を計算し、{"score", "breakdown", "out_of_area"} を返す。
 
     breakdown は項目ごとの合否(bool)。AIの課題分析で「どの条件を満たし、
     どの条件を外したか」を説明するために、スコアと併せて保持する。
+    out_of_area が真の物件は score を0とし、提案一覧から除外される。
     """
     budget = condition.get("budget")
     want_min = condition.get("station_minutes")

@@ -1,55 +1,73 @@
-# 宅ラーク — 不動産マッチングシステム（試作版）
+# 宅ラーク — 不動産マッチングシステム
 
-チーム「労楽」内部設計書をもとにした、AI不動産マッチングWebアプリのPython実装です。
+チーム「労楽」内部設計書をもとにした、AI不動産マッチングWebアプリのPython実装。
+大学授業の発表用制作物であり、作りやすさ・分かりやすさを重視した構成とする。
+
+**公開URL:** https://g5-rouraku-three.vercel.app
 
 ## 機能
 1. **条件入力** — 希望エリア・予算・間取り・駅距離・ペット可否を入力（必須/値チェックあり）
-2. **物件提案** — AIマッチングエンジンが適合度（%）を計算し、高い順に提案。合致物件がなければ条件緩和候補を提示
-3. **物件詳細・課題分析** — 物件詳細を表示し、AIが希望との乖離点・懸念点を分析
-4. **AIコンシェルジュ** — チャットで質問。物件と無関係な質問は対象外案内
+2. **物件提案** — マッチングエンジンが適合度（%）を計算し、高い順に提案。
+   希望エリアを最優先とし、別の都道府県の物件は適合率0%として非表示。
+   存在しないエリア表記には注意書きを表示
+3. **物件詳細・課題分析** — 物件詳細を表示し、Gemini が希望との乖離点・懸念点を分析
+4. **AIコンシェルジュ** — 全ページ共通の右側ドロワーでチャット質問（履歴はDBへ保存）
 5. **入居までの手順** — 物件種別（賃貸/購入）ごとの手続きフローを表示
 
 ## 技術構成
-- Python / Flask（画面 + API を単一プロセスで提供）
-- フロント：Jinja2 テンプレート + バニラJS
-- データ：現在は**モックデータ**（`data/mock_data.py`）。**E-R図（第三正規化）に準拠**し、物件条件/住宅情報/希望条件/入力情報/提案管理/課題分析/チャットの7テーブルを正規化して保持。リポジトリ層が結合して画面へ渡す。
-- DBスキーマ：`data/schema.sql`（PostgreSQL/Supabase用DDL。E-R図と1対1対応）
-- AI：現在は**モックAI**（ルールベース、`services/ai.py`）
+| 項目 | 内容 |
+|---|---|
+| 言語 | **Python のみ**（HTML/CSS/JS も `ui.py` に文字列として集約） |
+| フレームワーク | Flask（画面 + API を単一プロセスで提供） |
+| データベース | Supabase（PostgREST を requests で直接呼び出し） |
+| AI | Gemini API（REST を requests で直接呼び出し。既定 gemini-2.5-flash-lite） |
+| ホスティング | Vercel（@vercel/python） |
 
-> 設計書本体は Next.js/Vercel/Supabase/Gemini 前提ですが、本実装はご指定により Python で作成しています。
-> `USE_MOCK=false` ＋ APIキー設定で Gemini / Supabase への本接続に切り替えられる構造です（`services/ai.py` / `services/repository.py` の TODO 部分を実装）。
-
-## 動作環境
-- Windows 10 以降（Python 3.10+）
+### フォールバック設計
+発表デモを止めないため、外部サービスの障害時は自動でモックに切り替わる。
+- **Supabase 取得失敗**（無料プランの自動一時停止・通信障害）→ モックデータで表示
+- **Gemini 失敗**（キー未設定・レート制限・通信障害）→ ルールベースのモック応答
+- **Gemini の途切れ**（トークン上限）→ 上限を倍にして最大3回取り直し、それでも
+  途切れる場合は最後の句点で整える
 
 ## セットアップ & 起動
 ```powershell
-# 依存パッケージのインストール
 python -m pip install -r requirements.txt
 
-# 起動
+# 任意: 本接続する場合は .env.example を .env にコピーしてキーを設定
+# （未設定でもモックデータ・モックAIで全機能が動作する）
+
 python app.py
 ```
 ブラウザで http://127.0.0.1:5000 を開く。
 
-## 本接続（任意・今後）
-1. `.env.example` を `.env` にコピー
-2. `USE_MOCK=false`、`GEMINI_API_KEY` / `SUPABASE_URL` / `SUPABASE_ANON_KEY` を設定
-3. `services/repository.py`（Supabase）と `services/ai.py`（Gemini）の TODO を実装
-
 ## ディレクトリ構成
 ```
-app.py                  Flask 本体（ルーティング）
-config.py               設定（.env 読み込み・USE_MOCKフラグ）
-data/mock_data.py       モックデータ（E-R図準拠の正規化テーブル群）
-data/schema.sql         DB スキーマ DDL（Supabase/PostgreSQL用・E-R図対応）
-data/seed.sql           サンプルデータ投入用 SQL
+app.py                  Flask 本体（ルーティング・入力検証）
+config.py               設定（.env 読み込み・モック/本接続の切替判定）
+ui.py                   画面（HTML/CSS/JS を Python 文字列として集約）
+services/
+  matching.py           マッチングエンジン（適合度計算・県外除外）
+  ai.py                 AI（課題分析・チャット。Gemini↔モック自動切替）
+  repository.py         データアクセス層（Supabase↔モック自動切替）
+data/
+  mock_data.py          モックデータ（E-R図準拠の正規化テーブル群）
+  schema.sql            DB スキーマ DDL（Supabase/PostgreSQL用・E-R図対応）
+  seed.sql              サンプルデータ投入用 SQL
+  setup_supabase.sql    Supabase 初期設定（RLS。デモ用に無効化）
 vercel.json             Vercel デプロイ設定（@vercel/python）
 DEPLOY.md               Supabase + GitHub + Vercel デプロイ手順
-services/
-  repository.py         データアクセス層（モック↔Supabase切替）
-  matching.py           AIマッチングエンジン（適合度計算）
-  ai.py                 AI（課題分析・チャット。モック↔Gemini切替）
-templates/              画面（Jinja2）
-static/                 CSS / JS
 ```
+
+## 適合度の計算方法
+5項目の重み（合計100）を、満たした項目分だけ加算する。部分点は無し。
+
+| 項目 | 重み |
+|---|---|
+| エリア一致 | 30 |
+| 予算内 | 25 |
+| 間取り一致 | 20 |
+| 駅からの距離 | 15 |
+| ペット条件 | 10 |
+
+希望エリアと異なる都道府県の物件は、他項目の合致に関わらず適合率0%として除外する。

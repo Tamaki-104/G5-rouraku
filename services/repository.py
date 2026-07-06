@@ -68,30 +68,47 @@ def _flatten(prop: dict, cond: dict) -> dict:
 
 # --- 公開関数 ---
 
-def get_all_properties():
-    """全物件を、物件条件と結合した平坦な dict のリストで返す。"""
-    if config.SUPABASE_ENABLED:
-        rows = _rest_get("properties", {"select": "*,property_conditions(*)"})
-        return [_flatten(r, r.get("property_conditions")) for r in rows]
-
+def _mock_all_properties():
+    """モックデータから全物件を組み立てる。Supabase障害時のフォールバック先でもある。"""
     by_id = {c["id"]: c for c in PROPERTY_CONDITIONS}
     return [_flatten(p, by_id.get(p["property_condition_id"])) for p in PROPERTIES]
 
 
-def get_property(property_id: str):
-    """物件IDで1件のみ取得する(結合済み)。該当が無ければ None。"""
+def get_all_properties():
+    """全物件を、物件条件と結合した平坦な dict のリストで返す。
+
+    Supabaseは無料プランでは無操作が続くと自動一時停止するため、
+    取得に失敗した場合は画面を止めずモックデータへフォールバックする。
+    """
     if config.SUPABASE_ENABLED:
-        rows = _rest_get("properties", {
-            "id": f"eq.{property_id}",      # eq. はPostgRESTの完全一致フィルタ
-            "select": "*,property_conditions(*)",
-            "limit": 1,
-        })
-        if not rows:
-            return None
-        return _flatten(rows[0], rows[0].get("property_conditions"))
+        try:
+            rows = _rest_get("properties", {"select": "*,property_conditions(*)"})
+            return [_flatten(r, r.get("property_conditions")) for r in rows]
+        except Exception:
+            pass  # 以下のモックデータで代替
+    return _mock_all_properties()
+
+
+def get_property(property_id: str):
+    """物件IDで1件のみ取得する(結合済み)。該当が無ければ None。
+
+    get_all_properties と同様、Supabaseへの取得失敗時はモックデータで代替する。
+    """
+    if config.SUPABASE_ENABLED:
+        try:
+            rows = _rest_get("properties", {
+                "id": f"eq.{property_id}",      # eq. はPostgRESTの完全一致フィルタ
+                "select": "*,property_conditions(*)",
+                "limit": 1,
+            })
+            if not rows:
+                return None
+            return _flatten(rows[0], rows[0].get("property_conditions"))
+        except Exception:
+            pass  # 以下のモックデータで代替
 
     # モックは件数が少ないため線形探索で十分。
-    for p in get_all_properties():
+    for p in _mock_all_properties():
         if p["id"] == property_id:
             return p
     return None
