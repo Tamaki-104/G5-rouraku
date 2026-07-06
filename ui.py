@@ -1,10 +1,9 @@
 """
-画面(HTML/CSS/JS)を丸ごとPythonの文字列として持つモジュール。
+画面(HTML/CSS/JS)を Python の文字列として保持するモジュール。
 
-.html/.css/.js を別ファイルにせず全部ここに集約している。理由は言語をPythonに
-統一するため。app.py が Jinja の DictLoader に TEMPLATES を渡すので、
-{% extends "base.html" %} のテンプレート継承も普通に効く。
-CSS/JS は _BASE と _DETAIL の中に {% raw %} で埋め込んで配信する。
+.html/.css/.js を別ファイルとせず本モジュールに集約する(言語をPythonに統一するため)。
+app.py が Jinja の DictLoader に TEMPLATES を渡すことで、{% extends "base.html" %} の
+テンプレート継承も機能する。CSS/JS は _BASE と _DETAIL 内に {% raw %} で埋め込んで配信する。
 
 作成: チーム労楽  /  (c) 2026 チーム労楽
 """
@@ -643,7 +642,7 @@ _FLOW = """{% extends "base.html" %}
 {% endblock %}
 """
 
-# プレースホルダに CSS / JS を差し込む（f-string を使わないので波かっこの衝突なし）
+# プレースホルダへ CSS / JS を挿入する（f-string を使わず、波かっこの衝突を避けるため）
 _BASE = _BASE.replace("__CSS__", _CSS).replace("__CHAT_JS__", _CHAT_JS)
 _DETAIL = _DETAIL.replace("__DETAIL_JS__", _DETAIL_JS)
 

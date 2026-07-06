@@ -53,7 +53,6 @@ PROPERTIES = [
 ]
 
 # ── 希望条件（Input Condition）─────────────────────────────────
-# ユーザーが入力した希望条件。サンプルは設計書 P.18 より。
 INPUT_CONDITIONS = [
     {"id": "IC0000001", "area": "新宿区/渋谷区", "layout": "1LDK",       "station_minutes": 20, "pet_allowed": True},
     {"id": "IC0000002", "area": "池袋区",        "layout": "1LDK/2LDK", "station_minutes": 30, "pet_allowed": False},
