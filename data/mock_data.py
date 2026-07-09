@@ -15,6 +15,11 @@ PROPERTY_CONDITIONS = [
     {"id": "PC0000002", "area": "池袋区",   "layout": "2LDK", "station_minutes": 20, "pet_allowed": False},
     {"id": "PC0000003", "area": "横浜区",   "layout": "1LDK", "station_minutes": 10, "pet_allowed": False},
     {"id": "PC0000004", "area": "秋葉原区", "layout": "3LDK", "station_minutes": 5,  "pet_allowed": True},
+    {"id": "PC0000005", "area": "中野区",   "layout": "1DK",  "station_minutes": 40, "pet_allowed": False},
+    {"id": "PC0000006", "area": "台東区",   "layout": "1LDK", "station_minutes": 20, "pet_allowed": True},
+    {"id": "PC0000007", "area": "文京区",   "layout": "1LDK", "station_minutes": 5,  "pet_allowed": False},
+    {"id": "PC0000008", "area": "足立区",   "layout": "2LDK", "station_minutes": 30, "pet_allowed": False},
+    {"id": "PC0000009", "area": "港区",     "layout": "2LDK", "station_minutes": 5,  "pet_allowed": True},
 ]
 
 # ── 住宅情報（Properties）──────────────────────────────────────
@@ -50,6 +55,41 @@ PROPERTIES = [
         "image_url": "https://placehold.co/640x400?text=3L+Akihabara",
         "description": "秋葉原の駅徒歩5分・3LDK。広さ重視のファミリー向け物件。購入対象。",
     },
+    {
+        "id": "PRP0000005", "property_condition_id": "PC0000005",
+        "name": "弟切荘", "rent": 45000, "building_type": "アパート",
+        "deal_type": "賃貸",
+        "image_url": "https://placehold.co/640x400?text=Otogiri_So",
+        "description": "中野区の1DKアパート。破格の家賃。",
+    },
+    {
+        "id": "PRP0000006", "property_condition_id": "PC0000006",
+        "name": "サニーコート台東", "rent": 65000, "building_type": "アパート",
+        "deal_type": "賃貸",
+        "image_url": "https://placehold.co/640x400?text=Sunny_Coat_Taito",
+        "description": "台東区の1LDKアパート。周辺にコンビニやスーパーあり、ペット可。",
+    },
+    {
+        "id": "PRP0000007", "property_condition_id": "PC0000007",
+        "name": "アネモネ文京", "rent": 70000, "building_type": "マンション",
+        "deal_type": "賃貸",
+        "image_url": "https://placehold.co/640x400?text=Anemone_Bunkyo",
+        "description": "文京区の1LDKマンション。駅近で、冬場の通学通勤も快適。",
+    },
+    {
+        "id": "PRP0000008", "property_condition_id": "PC0000008",
+        "name": "プラザ足立北綾瀬", "rent": 100000, "building_type": "マンション",
+        "deal_type": "賃貸",
+        "image_url": "https://placehold.co/640x400?text=Plaza_Adachi_Kita-ayase",
+        "description": "足立区の2LDKマンション。落ち着いた住宅街にある築浅物件。",
+    },
+    {
+        "id": "PRP0000009", "property_condition_id": "PC0000009",
+        "name": "メゾン・ド・ポート", "rent": 200000, "building_type": "アパート",
+        "deal_type": "賃貸",
+        "image_url": "https://placehold.co/640x400?text=Maison_de_Port",
+        "description": "港区の2LDKアパート。最寄り駅から徒歩5分で、日当たりも良好。ペット可。",
+    },
 ]
 
 # ── 希望条件（Input Condition）─────────────────────────────────
@@ -57,7 +97,12 @@ INPUT_CONDITIONS = [
     {"id": "IC0000001", "area": "新宿区/渋谷区", "layout": "1LDK",       "station_minutes": 20, "pet_allowed": True},
     {"id": "IC0000002", "area": "池袋区",        "layout": "1LDK/2LDK", "station_minutes": 30, "pet_allowed": False},
     {"id": "IC0000003", "area": "秋葉原区",      "layout": "1L以上",     "station_minutes": 5,  "pet_allowed": True},
-    {"id": "IC0000004", "area": "横浜区",        "layout": "2LDK以上",   "station_minutes": 10, "pet_allowed": False},
+    {"id": "IC0000004", "area": "横浜区",        "layout": "2LDK以上",       "station_minutes": 10, "pet_allowed": False},
+    {"id": "IC0000005", "area": "中野区",        "layout": "1DK/1LDK",       "station_minutes": 40, "pet_allowed": False},
+    {"id": "IC0000006", "area": "台東区",        "layout": "1LDK/2LDK",      "station_minutes": 20, "pet_allowed": True},
+    {"id": "IC0000007", "area": "文京区",        "layout": "1LDK以上",       "station_minutes": 5,  "pet_allowed": False},
+    {"id": "IC0000008", "area": "足立区",        "layout": "2LDK/2LDK以上",  "station_minutes": 30, "pet_allowed": False},
+    {"id": "IC0000009", "area": "港区",          "layout": "2LDK/2LDK以上",  "station_minutes": 5,  "pet_allowed": True},
 ]
 
 # ── 入力情報（Input）──────────────────────────────────────────
@@ -73,8 +118,8 @@ INPUTS = [
 PROPOSES = [
     {"id": "PRO0000001", "input_id": "INP0000001", "property_id": "PRP0000001", "score": 70, "rank": "高い", "created_at": "2026-05-03"},
     {"id": "PRO0000002", "input_id": "INP0000002", "property_id": "PRP0000002", "score": 58, "rank": "普通", "created_at": "2026-05-07"},
-    {"id": "PRO0000003", "input_id": "INP0000003", "property_id": "PRP0000003", "score": 90, "rank": "高い", "created_at": "2026-06-03"},
-    {"id": "PRO0000004", "input_id": "INP0000004", "property_id": "PRP0000004", "score": 65, "rank": "普通", "created_at": "2026-06-05"},
+    {"id": "PRO0000003", "input_id": "INP0000003", "property_id": "PRP0000004", "score": 90, "rank": "高い", "created_at": "2026-06-03"},
+    {"id": "PRO0000004", "input_id": "INP0000004", "property_id": "PRP0000003", "score": 65, "rank": "普通", "created_at": "2026-06-05"},
 ]
 
 # ── 課題分析（Analyze）────────────────────────────────────────

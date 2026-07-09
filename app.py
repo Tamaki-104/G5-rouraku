@@ -14,6 +14,7 @@ from jinja2 import DictLoader
 import config
 import ui
 from services import repository, matching, ai
+from services.favorites import favorites_bp
 
 # HTML/CSS/JSは全て ui.py に集約しているため、静的フォルダ(static/)は使用しない。
 app = Flask(__name__, static_folder=None)
@@ -21,11 +22,17 @@ app.secret_key = config.FLASK_SECRET_KEY
 # テンプレートは .html ファイルではなく ui.py 内の文字列群から読み込む。
 app.jinja_env.loader = DictLoader(ui.TEMPLATES)
 
+# お気に入り機能(登録/解除・一覧)を別モジュールから取り込む。
+app.register_blueprint(favorites_bp)
+
 
 @app.context_processor
-def inject_chat_history():
-    """チャットドロワーは全ページ共通のため、履歴を全テンプレートへ渡す。"""
-    return {"chat_history": session.get("chat_history", [])}
+def inject_common():
+    """全ページ共通で使う値を渡す。チャット履歴とお気に入りID(ボタンの状態表示用)。"""
+    return {
+        "chat_history": session.get("chat_history", []),
+        "favorite_ids": session.get("favorites", []),
+    }
 
 
 def _parse_int(raw, *, minimum, empty_msg, nan_msg, small_msg):

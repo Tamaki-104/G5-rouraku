@@ -182,7 +182,22 @@ h2 { font-family: var(--font-display); font-weight: 700; font-size: 19px; letter
   border: 1px solid var(--line); padding: 4px 11px; border-radius: 999px;
 }
 .tag.rent { color: var(--accent); font-weight: 700; background: var(--accent-soft); border-color: #cfe1d5; }
-.property-body .btn { align-self: flex-start; margin-top: auto; }
+.property-actions { display: flex; align-items: center; gap: 10px; margin-top: auto; }
+.property-body .btn { align-self: flex-start; }
+
+/* favorite */
+.fav-btn {
+  flex: none; width: 38px; height: 38px; border-radius: 999px;
+  background: #fff; border: 1px solid var(--line); color: var(--muted);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: color .18s, border-color .18s, background .18s, transform .1s;
+}
+.fav-btn:hover { color: var(--danger); border-color: var(--danger); }
+.fav-btn:active { transform: scale(.9); }
+.fav-btn svg { fill: none; }
+.fav-btn.is-fav { color: var(--danger); border-color: #ecc6c0; background: var(--danger-soft); }
+.fav-btn.is-fav svg { fill: var(--danger); }
+.detail-hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
 
 /* score */
 .score-wrap { min-width: 132px; text-align: right; flex: none; }
@@ -412,6 +427,7 @@ _BASE = """<!DOCTYPE html>
     <nav>
       <a class="nav-link" href="{{ url_for('index') }}">条件入力</a>
       <a class="nav-link" href="{{ url_for('proposals') }}">物件提案</a>
+      <a class="nav-link" data-fav-nav data-count="{{ favorite_ids|length }}" href="{{ url_for('favorites.favorites_page') }}">お気に入り{% if favorite_ids %}（{{ favorite_ids|length }}）{% endif %}</a>
       <button type="button" class="nav-chat-btn" data-chat-toggle>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         AIに質問
@@ -454,6 +470,7 @@ _BASE = """<!DOCTYPE html>
   </aside>
 
   <script>{% raw %}__CHAT_JS__{% endraw %}</script>
+  <script>{% raw %}__FAV_JS__{% endraw %}</script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
@@ -565,7 +582,10 @@ _PROPOSALS = """{% extends "base.html" %}
         <span class="tag">駅徒歩{{ p.station_minutes }}分</span>
         <span class="tag">ペット{{ '可' if p.pet_allowed else '不可' }}</span>
       </div>
-      <a class="btn primary small" href="{{ url_for('property_detail', property_id=p.id) }}">詳細・課題を確認</a>
+      <div class="property-actions">
+        <a class="btn primary small" href="{{ url_for('property_detail', property_id=p.id) }}">詳細・課題を確認</a>
+        <button type="button" class="fav-btn {% if p.id in favorite_ids %}is-fav{% endif %}" data-fav="{{ p.id }}" aria-label="お気に入り" aria-pressed="{{ 'true' if p.id in favorite_ids else 'false' }}">__HEART__</button>
+      </div>
     </div>
   </article>
   {% endfor %}
@@ -577,9 +597,12 @@ _DETAIL = """{% extends "base.html" %}
 {% block title %}{{ prop.name }}｜宅ラーク{% endblock %}
 {% block content %}
 <a class="back" href="{{ url_for('proposals') }}">← 物件提案に戻る</a>
-<div class="page-hero">
-  <span class="eyebrow">Step 03 — 物件詳細</span>
-  <h1>{{ prop.name }}</h1>
+<div class="page-hero detail-hero">
+  <div>
+    <span class="eyebrow">Step 03 — 物件詳細</span>
+    <h1>{{ prop.name }}</h1>
+  </div>
+  <button type="button" class="fav-btn {% if prop.id in favorite_ids %}is-fav{% endif %}" data-fav="{{ prop.id }}" aria-label="お気に入り" aria-pressed="{{ 'true' if prop.id in favorite_ids else 'false' }}">__HEART__</button>
 </div>
 
 <div class="detail-grid">
@@ -642,9 +665,99 @@ _FLOW = """{% extends "base.html" %}
 {% endblock %}
 """
 
-# プレースホルダへ CSS / JS を挿入する（f-string を使わず、波かっこの衝突を避けるため）
-_BASE = _BASE.replace("__CSS__", _CSS).replace("__CHAT_JS__", _CHAT_JS)
-_DETAIL = _DETAIL.replace("__DETAIL_JS__", _DETAIL_JS)
+# お気に入りボタンのハートアイコン（is-fav のとき塗りつぶし）。
+_HEART = ('<svg viewBox="0 0 24 24" width="20" height="20" fill="none" '
+          'stroke="currentColor" stroke-width="2" stroke-linecap="round" '
+          'stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1'
+          'a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>')
+
+_FAV_JS = """
+// お気に入りボタン（全ページ共通）：押下でトグルし、見た目とナビ件数を更新する
+document.addEventListener("DOMContentLoaded", () => {
+  const navLink = document.querySelector("[data-fav-nav]");
+
+  function updateNavCount(added) {
+    if (!navLink) return;
+    let n = parseInt(navLink.dataset.count || "0", 10) + (added ? 1 : -1);
+    if (n < 0) n = 0;
+    navLink.dataset.count = n;
+    navLink.textContent = n > 0 ? `お気に入り（${n}）` : "お気に入り";
+  }
+
+  document.querySelectorAll("[data-fav]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      try {
+        const res = await fetch("/api/favorites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ property_id: btn.dataset.fav }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          btn.classList.toggle("is-fav", data.favorited);
+          btn.setAttribute("aria-pressed", String(data.favorited));
+          updateNavCount(data.favorited);
+          // お気に入りページで解除した場合はカードごと消す
+          if (!data.favorited && btn.dataset.removeOnUnfav) {
+            const card = btn.closest(".property-card");
+            if (card) card.remove();
+          }
+        }
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+});
+"""
+
+_FAVORITES = """{% extends "base.html" %}
+{% block title %}お気に入り｜宅ラーク{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <span class="eyebrow">お気に入り</span>
+  <h1>保存した物件</h1>
+</div>
+
+{% if not properties %}
+<p class="notice">お気に入りに登録された物件はまだありません。物件提案や物件詳細の♡ボタンから追加できます。</p>
+{% endif %}
+
+<div class="property-list">
+  {% for p in properties %}
+  <article class="card property-card">
+    <div class="thumb"><img src="{{ p.image_url }}" alt="{{ p.name }}"></div>
+    <div class="property-body">
+      <div class="property-head">
+        <div>
+          <span class="eyebrow-inline">{{ p.deal_type }} ・ {{ p.building_type }}</span>
+          <h2>{{ p.name }}</h2>
+        </div>
+      </div>
+      <div class="tags">
+        <span class="tag">{{ p.area }}</span>
+        <span class="tag">{{ p.layout }}</span>
+        <span class="tag rent">家賃 {{ '{:,}'.format(p.rent) }}円</span>
+        <span class="tag">駅徒歩{{ p.station_minutes }}分</span>
+        <span class="tag">ペット{{ '可' if p.pet_allowed else '不可' }}</span>
+      </div>
+      <div class="property-actions">
+        <a class="btn primary small" href="{{ url_for('property_detail', property_id=p.id) }}">詳細・課題を確認</a>
+        <button type="button" class="fav-btn is-fav" data-fav="{{ p.id }}" data-remove-on-unfav="1" aria-label="お気に入りから外す" aria-pressed="true">__HEART__</button>
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% endblock %}
+"""
+
+# プレースホルダへ CSS / JS / アイコンを挿入する（f-string を使わず、波かっこの衝突を避けるため）
+_BASE = _BASE.replace("__CSS__", _CSS).replace("__CHAT_JS__", _CHAT_JS).replace("__FAV_JS__", _FAV_JS)
+_DETAIL = _DETAIL.replace("__DETAIL_JS__", _DETAIL_JS).replace("__HEART__", _HEART)
+_PROPOSALS = _PROPOSALS.replace("__HEART__", _HEART)
+_FAVORITES = _FAVORITES.replace("__HEART__", _HEART)
 
 TEMPLATES = {
     "base.html": _BASE,
@@ -652,4 +765,5 @@ TEMPLATES = {
     "proposals.html": _PROPOSALS,
     "detail.html": _DETAIL,
     "flow.html": _FLOW,
+    "favorites.html": _FAVORITES,
 }
