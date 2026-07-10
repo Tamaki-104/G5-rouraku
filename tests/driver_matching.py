@@ -101,7 +101,7 @@ props = [dict(prop_full, id="A"), dict(prop_over, id="B")]
 before = props[0].copy()          # 破壊されていないか確認するための控え
 ranked = m.match_properties(cond, props)
 item(17, "match_properties：適合度の高い順に並ぶ",
-     "A(100点), B(75点)", "['A','B']",
+     "A(100点), B(75点)", ["A", "B"],
      [p["id"] for p in ranked])
 item(18, "match_properties：元の物件dictを変更しない（scoreキーが増えない）",
      "props[0] に score を書き込まないこと", "score無し（元のまま）",
