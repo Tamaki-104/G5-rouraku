@@ -21,7 +21,15 @@ def _as_bool(value: str, default: bool = True) -> bool:
 USE_MOCK = _as_bool(os.getenv("USE_MOCK"), default=True)
 
 # セッションCookieの署名鍵。漏洩するとなりすましが可能になるため本番は必ず環境変数で指定する。
-FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "taku-raku-dev-secret")
+FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
+if not FLASK_SECRET_KEY:
+    if not USE_MOCK:
+        # 本番(実サービス接続)で未設定なら、既知の固定値で署名してしまう事故を防ぐため起動を止める。
+        raise RuntimeError(
+            "本番では環境変数 FLASK_SECRET_KEY を設定してください。"
+            "未設定のままだと固定の既知鍵で署名され、セッション偽造の危険があります。")
+    # ローカル/モック開発用の暫定鍵。本番では上のガードにより使われない。
+    FLASK_SECRET_KEY = "taku-raku-dev-secret"
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 # 既定は無料枠が広く軽量・高速な flash-lite(2.5系)。上位品質が必要な場合は環境変数
