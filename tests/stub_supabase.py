@@ -22,7 +22,7 @@ FAKE_ROWS = [
         "building_type": "マンション", "deal_type": "賃貸",
         "image_url": "", "description": "スタブ物件A",
         "property_conditions": {
-            "area": "渋谷区", "layout": "1LDK",
+            "prefecture": "東京都", "area": "渋谷区", "layout": "1LDK",
             "station_minutes": 12, "pet_allowed": True,
         },
     },

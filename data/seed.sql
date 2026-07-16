@@ -4,11 +4,11 @@
 -- ============================================================
 
 -- 物件条件
-INSERT INTO property_conditions (id, area, layout, station_minutes, pet_allowed) VALUES
-  ('PC0000001', '渋谷区',   '1LDK', 15, TRUE),
-  ('PC0000002', '池袋区',   '2LDK', 20, FALSE),
-  ('PC0000003', '横浜区',   '1LDK', 10, FALSE),
-  ('PC0000004', '秋葉原区', '3LDK', 5,  TRUE)
+INSERT INTO property_conditions (id, prefecture, area, layout, station_minutes, pet_allowed) VALUES
+  ('PC0000001', '東京都',   '渋谷区',   '1LDK', 15, TRUE),
+  ('PC0000002', '東京都',   '池袋区',   '2LDK', 20, FALSE),
+  ('PC0000003', '神奈川県', '横浜区',   '1LDK', 10, FALSE),
+  ('PC0000004', '東京都',   '秋葉原区', '3LDK', 5,  TRUE)
 ON CONFLICT (id) DO NOTHING;
 
 -- 住宅情報

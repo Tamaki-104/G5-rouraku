@@ -54,29 +54,29 @@ def run_auto():
     item(5, "_layout_match：小文字1ldkでも一致（真）",
          'cond="1ldk", prop="1LDK"', True, m._layout_match("1ldk", "1LDK"))
 
-    # --- out_of_prefecture：県外判定の4分岐 ---
+    # --- out_of_prefecture：県外判定の4分岐（希望都道府県 vs 物件の都道府県）---
     item(6, "out_of_prefecture：同一都道府県は県外でない（偽）",
-         '"渋谷区","池袋区"', False, m.out_of_prefecture("渋谷区", "池袋区"))
+         '"東京都","東京都"', False, m.out_of_prefecture("東京都", "東京都"))
     item(7, "out_of_prefecture：別の都道府県は県外（真）",
-         '"渋谷区","横浜区"', True, m.out_of_prefecture("渋谷区", "横浜区"))
-    item(8, "out_of_prefecture：希望エリア不明は判定不能→県外にしない（偽）",
-         '"大阪市","渋谷区"', False, m.out_of_prefecture("大阪市", "渋谷区"))
-    item(9, "out_of_prefecture：物件エリア不明は判定不能→県外にしない（偽）",
-         '"渋谷区","大阪市"', False, m.out_of_prefecture("渋谷区", "大阪市"))
+         '"東京都","神奈川県"', True, m.out_of_prefecture("東京都", "神奈川県"))
+    item(8, "out_of_prefecture：希望の都道府県が空なら判定不能→県外にしない（偽）",
+         '"","東京都"', False, m.out_of_prefecture("", "東京都"))
+    item(9, "out_of_prefecture：物件の都道府県が空なら判定不能→県外にしない（偽）",
+         '"東京都",""', False, m.out_of_prefecture("東京都", ""))
 
     # --- calculate_score：全一致 / 各項目ミス / 県外0% ---
-    cond = {"area": "渋谷区", "budget": 70000, "layout": "1LDK",
-            "station_minutes": 20, "pet_allowed": True}
-    prop_full = {"area": "渋谷区", "rent": 60000, "layout": "1LDK",
-                 "station_minutes": 15, "pet_allowed": True}
+    cond = {"prefecture": "東京都", "area": "渋谷区", "budget": 70000,
+            "layout": "1LDK", "station_minutes": 20, "pet_allowed": True}
+    prop_full = {"prefecture": "東京都", "area": "渋谷区", "rent": 60000,
+                 "layout": "1LDK", "station_minutes": 15, "pet_allowed": True}
     r = m.calculate_score(cond, prop_full)
     item(10, "calculate_score：全項目一致は100点・県外でない",
          "cond=渋谷/7万/1LDK/20分/ペット可, prop=一致",
          "{'score':100, 'out_of_area':False}",
          f"{{'score':{r['score']}, 'out_of_area':{r['out_of_area']}}}")
 
-    prop_over = {"area": "渋谷区", "rent": 90000, "layout": "1LDK",
-                 "station_minutes": 15, "pet_allowed": True}
+    prop_over = {"prefecture": "東京都", "area": "渋谷区", "rent": 90000,
+                 "layout": "1LDK", "station_minutes": 15, "pet_allowed": True}
     r = m.calculate_score(cond, prop_over)
     item(11, "calculate_score：予算超過は budget を外す（100-25=75）",
          "prop.rent=90000 > budget=70000", "{'score':75, budget:False}",
@@ -89,11 +89,11 @@ def run_auto():
          "cond.pet_allowed=False, prop.pet=False", "pet:True",
          f"pet:{r['breakdown']['pet']}")
 
-    prop_out = {"area": "横浜区", "rent": 60000, "layout": "1LDK",
-                "station_minutes": 15, "pet_allowed": True}
+    prop_out = {"prefecture": "神奈川県", "area": "横浜区", "rent": 60000,
+                "layout": "1LDK", "station_minutes": 15, "pet_allowed": True}
     r = m.calculate_score(cond, prop_out)
     item(13, "calculate_score：県外物件は強制0%",
-         "cond=渋谷(東京), prop=横浜(神奈川)", "{'score':0, 'out_of_area':True}",
+         "cond=東京都/渋谷区, prop=神奈川県/横浜区", "{'score':0, 'out_of_area':True}",
          f"{{'score':{r['score']}, 'out_of_area':{r['out_of_area']}}}")
 
     # --- rank_label：境界値 70 / 40 ---
@@ -121,13 +121,14 @@ def run_manual():
     print("=" * 70)
     print(" matching.py 手動テスト（引数を入力して分岐を確認）")
     print("=" * 70)
-    print(" ヒント: 物件エリアを『横浜区』にすると県外分岐(適合度0%)を確認できます。")
+    print(" ヒント: 物件の都道府県を『神奈川県』にすると県外分岐(適合度0%)を確認できます。")
     print("         予算より高い家賃、希望と違う間取り等で各項目の合否が変わります。\n")
 
     while True:
         print("[希望条件を入力]")
         cond = {
-            "area": ask_str("希望エリア", "渋谷区"),
+            "prefecture": ask_str("希望都道府県", "東京都"),
+            "area": ask_str("希望エリア(地区)", "渋谷区"),
             "budget": ask_int("予算上限(円)", 70000),
             "layout": ask_str("希望間取り", "1LDK"),
             "station_minutes": ask_int("駅からの距離(分以内)", 20),
@@ -135,7 +136,8 @@ def run_manual():
         }
         print("[物件を入力]")
         prop = {
-            "area": ask_str("物件エリア", "渋谷区"),
+            "prefecture": ask_str("物件の都道府県", "東京都"),
+            "area": ask_str("物件エリア(地区)", "渋谷区"),
             "rent": ask_int("物件の家賃(円)", 60000),
             "layout": ask_str("物件の間取り", "1LDK"),
             "station_minutes": ask_int("物件の駅からの距離(分)", 15),

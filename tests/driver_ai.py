@@ -26,10 +26,11 @@ from manual_helpers import ask_str, ask_bool, ask_choice
 # スタブの差し込み：ai が内部で呼ぶ _gemini_generate をスタブへ置き換える。
 ai._gemini_generate = stub.gemini_generate_stub
 
-COND = {"area": "渋谷区", "budget": 70000, "layout": "1LDK",
-        "station_minutes": 20, "pet_allowed": False}
-PROP = {"id": "PRP0000002", "name": "サンバ池袋", "area": "池袋区", "rent": 75000,
-        "layout": "2LDK", "station_minutes": 20, "pet_allowed": False, "deal_type": "賃貸"}
+COND = {"prefecture": "東京都", "area": "渋谷区", "budget": 70000,
+        "layout": "1LDK", "station_minutes": 20, "pet_allowed": False}
+PROP = {"id": "PRP0000002", "name": "サンバ池袋", "prefecture": "東京都",
+        "area": "池袋区", "rent": 75000, "layout": "2LDK",
+        "station_minutes": 20, "pet_allowed": False, "deal_type": "賃貸"}
 
 
 def head(no, desc):

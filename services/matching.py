@@ -16,36 +16,18 @@ WEIGHTS = {
     "pet": 10,
 }
 
-# エリア名 -> 都道府県。県外判定に使用する。
-# 物件提案では希望エリアを最優先とし、入力エリアと異なる県の物件は適合率0%で除外する。
-# ※サンプルデータの架空区(池袋区・秋葉原区)も便宜上ここで都道府県に紐付ける。
-AREA_PREFECTURES = {
-    "渋谷区": "東京都",
-    "新宿区": "東京都",
-    "池袋区": "東京都",
-    "秋葉原区": "東京都",
-    "中野区": "東京都",
-    "台東区": "東京都",
-    "文京区": "東京都",
-    "足立区": "東京都",
-    "港区": "東京都",
-    "横浜区": "神奈川県",
-}
+def out_of_prefecture(cond_prefecture: str, prop_prefecture: str) -> bool:
+    """物件が、希望の都道府県外か否かを判定する。
 
-
-def out_of_prefecture(cond_area: str, prop_area: str) -> bool:
-    """物件が、希望エリアから見て県外か否かを判定する。
-
-    入力エリアそれぞれの都道府県を集合とし、物件の都道府県がそのいずれにも
-    含まれなければ県外とする。入力・物件のどちらかから都道府県を特定できない
-    場合は判定不能とし、県外扱いにはしない(誤って全件除外しないため)。
+    検索フォームで入力された希望都道府県と、物件データに内蔵された都道府県を
+    直接比較する。どちらかが未設定(空)の場合は判定不能とし、県外扱いには
+    しない(誤って全件除外しないため)。
     """
-    wanted_prefs = {AREA_PREFECTURES[a] for a in split_multi(cond_area)
-                    if a in AREA_PREFECTURES}
-    prop_pref = AREA_PREFECTURES.get(prop_area)
-    if not wanted_prefs or prop_pref is None:
+    cond_pref = (cond_prefecture or "").strip()
+    prop_pref = (prop_prefecture or "").strip()
+    if not cond_pref or not prop_pref:
         return False
-    return prop_pref not in wanted_prefs
+    return cond_pref != prop_pref
 
 
 def split_multi(value: str) -> list:
@@ -86,9 +68,10 @@ def calculate_score(condition: dict, prop: dict) -> dict:
     }
     score = sum(WEIGHTS[key] for key, ok in hit.items() if ok)
 
-    # 希望エリアは最重要条件。県外の物件は他項目が合致していても提案対象とせず、
-    # 適合率を強制的に0%へ落とす(一覧からも除外される)。
-    out_of_area = out_of_prefecture(condition.get("area", ""), prop["area"])
+    # 希望エリアは最重要条件。希望と異なる都道府県の物件は他項目が合致していても
+    # 提案対象とせず、適合率を強制的に0%へ落とす(一覧からも除外される)。
+    out_of_area = out_of_prefecture(condition.get("prefecture", ""),
+                                    prop.get("prefecture", ""))
     if out_of_area:
         score = 0
 

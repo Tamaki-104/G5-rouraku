@@ -490,8 +490,16 @@ _INDEX = """{% extends "base.html" %}
 {% endif %}
 
 <form method="post" action="{{ url_for('search') }}" class="card form" novalidate>
+  <div class="field {% if errors and errors.prefecture %}has-error{% endif %}">
+    <label for="prefecture">希望都道府県 <span class="req">必須</span></label>
+    <input type="text" id="prefecture" name="prefecture" placeholder="例：東京都"
+           value="{{ condition.prefecture if condition else '' }}">
+    {% if errors and errors.prefecture %}<small class="err">{{ errors.prefecture }}</small>{% endif %}
+    <small class="hint">この都道府県以外の物件は提案されません。</small>
+  </div>
+
   <div class="field {% if errors and errors.area %}has-error{% endif %}">
-    <label for="area">希望エリア <span class="req">必須</span></label>
+    <label for="area">希望エリア（地区） <span class="req">必須</span></label>
     <input type="text" id="area" name="area" placeholder="例：渋谷区 または 新宿区/渋谷区"
            value="{{ condition.area if condition else '' }}">
     {% if errors and errors.area %}<small class="err">{{ errors.area }}</small>{% endif %}
@@ -541,7 +549,7 @@ _PROPOSALS = """{% extends "base.html" %}
 
 <div class="cond-summary card">
   <strong>検索条件</strong>
-  <span>{{ condition.area }} ・ 予算 {{ '{:,}'.format(condition.budget) }}円以下 ・
+  <span>{{ condition.prefecture }} {{ condition.area }} ・ 予算 {{ '{:,}'.format(condition.budget) }}円以下 ・
   {{ condition.layout }} ・ 駅徒歩{{ condition.station_minutes }}分以内 ・
   ペット{{ '可のみ' if condition.pet_allowed else '不問' }}</span>
   <a class="btn ghost small" href="{{ url_for('index') }}">条件を変更</a>
@@ -610,7 +618,7 @@ _DETAIL = """{% extends "base.html" %}
   <div class="card">
     {% if score is not none %}<p class="score-big">あなたの条件との適合度<strong>{{ score }}%</strong></p>{% endif %}
     <table class="spec">
-      <tr><th>エリア</th><td>{{ prop.area }}</td></tr>
+      <tr><th>エリア</th><td>{{ prop.prefecture }}{{ prop.area }}</td></tr>
       <tr><th>家賃</th><td>{{ '{:,}'.format(prop.rent) }}円</td></tr>
       <tr><th>間取り</th><td>{{ prop.layout }}</td></tr>
       <tr><th>駅からの距離</th><td>徒歩{{ prop.station_minutes }}分</td></tr>

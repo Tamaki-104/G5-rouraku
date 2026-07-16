@@ -65,12 +65,16 @@ def index():
 def search():
     """入力を検証し、通れば条件をセッションへ保存して提案画面へ遷移する。"""
     errors = {}  # 項目名 -> エラー文。1件でも存在すれば入力画面へ差し戻す。
+    prefecture = (request.form.get("prefecture") or "").strip()
     area = (request.form.get("area") or "").strip()
     layout = (request.form.get("layout") or "").strip()
     pet_allowed = request.form.get("pet_allowed") == "on"
 
+    # 都道府県は県外判定(希望と異なる県の物件を0%で除外)に使うため必須とする。
+    if not prefecture:
+        errors["prefecture"] = "希望の都道府県を入力してください。"
     if not area:
-        errors["area"] = "希望エリアを入力してください。"
+        errors["area"] = "希望エリア（地区）を入力してください。"
     if not layout:
         errors["layout"] = "希望の間取りを入力してください。"
 
@@ -93,8 +97,8 @@ def search():
         errors["station_minutes"] = err
 
     condition = {
-        "area": area, "layout": layout, "budget": budget,
-        "station_minutes": station, "pet_allowed": pet_allowed,
+        "prefecture": prefecture, "area": area, "layout": layout,
+        "budget": budget, "station_minutes": station, "pet_allowed": pet_allowed,
     }
 
     if errors:

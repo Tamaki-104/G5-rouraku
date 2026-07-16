@@ -13,7 +13,7 @@ Vercel のサーバーレスが軽量になること、の2点が理由。
 """
 import config
 from data.mock_data import (
-    PROPERTY_CONDITIONS, PROPERTIES, MOVE_IN_FLOWS,
+    PROPERTY_CONDITIONS, PROPERTIES, MOVE_IN_FLOWS, AREA_PREFECTURES,
 )
 
 
@@ -50,6 +50,7 @@ def _flatten(prop: dict, cond: dict) -> dict:
     処理を共通化する。結合相手が無くても落ちないよう空dictで受ける。
     """
     cond = cond or {}
+    area = cond.get("area", "")
     return {
         "id": prop["id"],
         "name": prop["name"],
@@ -59,7 +60,10 @@ def _flatten(prop: dict, cond: dict) -> dict:
         "image_url": prop.get("image_url", ""),
         "description": prop.get("description", ""),
         # 以下は物件条件テーブル側の項目。
-        "area": cond.get("area", ""),
+        # prefecture はデータ内蔵の値を第一とし、列が無い(未移行の)行は
+        # エリア名からの補完表で埋める。県外判定が確実に働くようにするため。
+        "prefecture": cond.get("prefecture") or AREA_PREFECTURES.get(area, ""),
+        "area": area,
         "layout": cond.get("layout", ""),
         "station_minutes": cond.get("station_minutes"),
         "pet_allowed": cond.get("pet_allowed", False),

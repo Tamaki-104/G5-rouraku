@@ -7,7 +7,8 @@
 -- ── 物件条件（Property condition）──────────────────────────
 CREATE TABLE IF NOT EXISTS property_conditions (
     id              TEXT PRIMARY KEY,          -- 物件条件ID (例: PC0000001)
-    area            TEXT NOT NULL,             -- エリア
+    prefecture      TEXT NOT NULL DEFAULT '',  -- 都道府県（県外判定に使用）
+    area            TEXT NOT NULL,             -- エリア（地区）
     layout          TEXT NOT NULL,             -- 間取り
     station_minutes INTEGER NOT NULL,          -- 駅からの距離（分）
     pet_allowed     BOOLEAN NOT NULL DEFAULT FALSE  -- ペット許可

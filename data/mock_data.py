@@ -10,17 +10,28 @@ Supabaseへ移しても構造が変わらない。結合は repository 層に任
 """
 
 # ── 物件条件（Property condition）────────────────────────────────
+# prefecture=都道府県。県外判定は物件データに内蔵したこの値と、
+# 検索フォームで入力された希望都道府県を直接比較して行う。
 PROPERTY_CONDITIONS = [
-    {"id": "PC0000001", "area": "渋谷区",   "layout": "1LDK", "station_minutes": 15, "pet_allowed": True},
-    {"id": "PC0000002", "area": "池袋区",   "layout": "2LDK", "station_minutes": 20, "pet_allowed": False},
-    {"id": "PC0000003", "area": "横浜区",   "layout": "1LDK", "station_minutes": 10, "pet_allowed": False},
-    {"id": "PC0000004", "area": "秋葉原区", "layout": "3LDK", "station_minutes": 5,  "pet_allowed": True},
-    {"id": "PC0000005", "area": "中野区",   "layout": "1DK",  "station_minutes": 40, "pet_allowed": False},
-    {"id": "PC0000006", "area": "台東区",   "layout": "1LDK", "station_minutes": 20, "pet_allowed": True},
-    {"id": "PC0000007", "area": "文京区",   "layout": "1LDK", "station_minutes": 5,  "pet_allowed": False},
-    {"id": "PC0000008", "area": "足立区",   "layout": "2LDK", "station_minutes": 30, "pet_allowed": False},
-    {"id": "PC0000009", "area": "港区",     "layout": "2LDK", "station_minutes": 5,  "pet_allowed": True},
+    {"id": "PC0000001", "prefecture": "東京都",   "area": "渋谷区",   "layout": "1LDK", "station_minutes": 15, "pet_allowed": True},
+    {"id": "PC0000002", "prefecture": "東京都",   "area": "池袋区",   "layout": "2LDK", "station_minutes": 20, "pet_allowed": False},
+    {"id": "PC0000003", "prefecture": "神奈川県", "area": "横浜区",   "layout": "1LDK", "station_minutes": 10, "pet_allowed": False},
+    {"id": "PC0000004", "prefecture": "東京都",   "area": "秋葉原区", "layout": "3LDK", "station_minutes": 5,  "pet_allowed": True},
+    {"id": "PC0000005", "prefecture": "東京都",   "area": "中野区",   "layout": "1DK",  "station_minutes": 40, "pet_allowed": False},
+    {"id": "PC0000006", "prefecture": "東京都",   "area": "台東区",   "layout": "1LDK", "station_minutes": 20, "pet_allowed": True},
+    {"id": "PC0000007", "prefecture": "東京都",   "area": "文京区",   "layout": "1LDK", "station_minutes": 5,  "pet_allowed": False},
+    {"id": "PC0000008", "prefecture": "東京都",   "area": "足立区",   "layout": "2LDK", "station_minutes": 30, "pet_allowed": False},
+    {"id": "PC0000009", "prefecture": "東京都",   "area": "港区",     "layout": "2LDK", "station_minutes": 5,  "pet_allowed": True},
 ]
+
+# エリア名 -> 都道府県の補完表。
+# Supabase側にまだ prefecture 列が無い行を読んだ場合のフォールバック専用。
+# （物件データに prefecture を内蔵済みなら参照されない）
+AREA_PREFECTURES = {
+    "渋谷区": "東京都", "新宿区": "東京都", "池袋区": "東京都", "秋葉原区": "東京都",
+    "中野区": "東京都", "台東区": "東京都", "文京区": "東京都", "足立区": "東京都",
+    "港区": "東京都", "横浜区": "神奈川県",
+}
 
 # ── 住宅情報（Properties）──────────────────────────────────────
 # property_condition_id が 物件条件 への FK。
