@@ -22,6 +22,13 @@ PROPERTY_CONDITIONS = [
     {"id": "PC0000007", "prefecture": "東京都",   "area": "文京区",   "layout": "1LDK", "station_minutes": 5,  "pet_allowed": False},
     {"id": "PC0000008", "prefecture": "東京都",   "area": "足立区",   "layout": "2LDK", "station_minutes": 30, "pet_allowed": False},
     {"id": "PC0000009", "prefecture": "東京都",   "area": "港区",     "layout": "2LDK", "station_minutes": 5,  "pet_allowed": True},
+    # 以下5件はSUUMO家賃相場（2026年4月時点、区内平均）を参考に追加。
+    # 実在の個別物件ではなく、区ごとの相場を反映した想定データ。
+    {"id": "PC0000010", "prefecture": "東京都",   "area": "新宿区",   "layout": "1LDK", "station_minutes": 8,  "pet_allowed": True},
+    {"id": "PC0000011", "prefecture": "東京都",   "area": "目黒区",   "layout": "2LDK", "station_minutes": 12, "pet_allowed": False},
+    {"id": "PC0000012", "prefecture": "東京都",   "area": "品川区",   "layout": "1LDK", "station_minutes": 10, "pet_allowed": True},
+    {"id": "PC0000013", "prefecture": "東京都",   "area": "世田谷区", "layout": "1LDK", "station_minutes": 15, "pet_allowed": False},
+    {"id": "PC0000014", "prefecture": "東京都",   "area": "杉並区",   "layout": "1DK",  "station_minutes": 9,  "pet_allowed": False},
 ]
 
 # エリア名 -> 都道府県の補完表。
@@ -31,6 +38,7 @@ AREA_PREFECTURES = {
     "渋谷区": "東京都", "新宿区": "東京都", "池袋区": "東京都", "秋葉原区": "東京都",
     "中野区": "東京都", "台東区": "東京都", "文京区": "東京都", "足立区": "東京都",
     "港区": "東京都", "横浜区": "神奈川県",
+    "目黒区": "東京都", "品川区": "東京都", "世田谷区": "東京都", "杉並区": "東京都",
 }
 
 # ── 住宅情報（Properties）──────────────────────────────────────
@@ -100,6 +108,43 @@ PROPERTIES = [
         "deal_type": "賃貸",
         "image_url": "https://placehold.co/640x400?text=Maison_de_Port",
         "description": "港区の2LDKアパート。最寄り駅から徒歩5分で、日当たりも良好。ペット可。",
+    },
+    # 以下5件のrentはSUUMO家賃相場（各区の1LDK/2LDK等・平均、2026年4月時点）を
+    # 参考値として使用。name/description/image_urlは他の行と同様、表示用の仮データ。
+    {
+        "id": "PRP0000010", "property_condition_id": "PC0000010",
+        "name": "コンフォート新宿", "rent": 171000, "building_type": "マンション",
+        "deal_type": "賃貸",
+        "image_url": "https://placehold.co/640x400?text=Comfort_Shinjuku",
+        "description": "新宿区の駅徒歩8分・1LDKマンション。繁華街へのアクセスが良く、ペット相談可。",
+    },
+    {
+        "id": "PRP0000011", "property_condition_id": "PC0000011",
+        "name": "グランドヒルズ目黒", "rent": 260000, "building_type": "マンション",
+        "deal_type": "賃貸",
+        "image_url": "https://placehold.co/640x400?text=Grand_Hills_Meguro",
+        "description": "目黒区の2LDKマンション。落ち着いた住宅街で、ファミリー層にも人気のエリア。ペット不可。",
+    },
+    {
+        "id": "PRP0000012", "property_condition_id": "PC0000012",
+        "name": "サニーテラス品川", "rent": 129000, "building_type": "アパート",
+        "deal_type": "賃貸",
+        "image_url": "https://placehold.co/640x400?text=Sunny_Terrace_Shinagawa",
+        "description": "品川区の駅徒歩10分・1LDKアパート。都心へのアクセスが良く、ペット相談可。",
+    },
+    {
+        "id": "PRP0000013", "property_condition_id": "PC0000013",
+        "name": "グリーンコート世田谷", "rent": 143000, "building_type": "マンション",
+        "deal_type": "賃貸",
+        "image_url": "https://placehold.co/640x400?text=Green_Court_Setagaya",
+        "description": "世田谷区の1LDKマンション。緑が多く落ち着いた住環境。ペット不可。",
+    },
+    {
+        "id": "PRP0000014", "property_condition_id": "PC0000014",
+        "name": "陽だまり荘杉並", "rent": 69000, "building_type": "アパート",
+        "deal_type": "賃貸",
+        "image_url": "https://placehold.co/640x400?text=Hidamari_So_Suginami",
+        "description": "杉並区の1DKアパート。家賃を抑えたい一人暮らし向け。ペット不可。",
     },
 ]
 

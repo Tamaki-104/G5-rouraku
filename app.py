@@ -130,10 +130,11 @@ def proposals():
     relaxed = bool(ranked) and not matched
     display = matched or ranked
 
-    # 入力エリアのうち物件データに存在しない表記(誤字・「区」抜け等)を抽出し、注意喚起に用いる。
-    known_areas = {p["area"] for p in all_props}
+    # 入力エリアのうち物件データに存在しない表記(誤字等)を抽出し、注意喚起に用いる。
+    # 「渋谷」のような市区町村抜けは正規化により一致扱いとなり、注意書きの対象にしない。
+    known_areas = {matching.normalize_area(p["area"]) for p in all_props}
     unknown_areas = [a for a in matching.split_multi(condition.get("area", ""))
-                     if a not in known_areas]
+                     if matching.normalize_area(a) not in known_areas]
 
     return render_template("proposals.html", condition=condition,
                            properties=display, relaxed=relaxed,

@@ -111,8 +111,16 @@ def run_auto():
          "props[0] に score を書き込まないこと", "score無し（元のまま）",
          "score有り（破壊）" if "score" in props[0] else "score無し（元のまま）")
 
+    # --- 市区町村抜けの入力補完 ---
+    item(19, "_area_match：「渋谷」でも「渋谷区」に一致（市区町村抜けの補完）",
+         'cond="渋谷", prop="渋谷区"', True, m._area_match("渋谷", "渋谷区"))
+    item(20, "_area_match：「渋区」は「渋谷区」に一致しない（部分一致はしない）",
+         'cond="渋区", prop="渋谷区"', False, m._area_match("渋区", "渋谷区"))
+    item(21, "normalize_area：1文字の名前はそのまま（空文字にならない）",
+         '"区"', "区", m.normalize_area("区"))
+
     print("=" * 70)
-    print(" 以上18項目。『参考判定』が全て一致なら合格。不一致はGitHub Issueへ。")
+    print(" 以上21項目。『参考判定』が全て一致なら合格。不一致はGitHub Issueへ。")
     print("=" * 70)
 
 

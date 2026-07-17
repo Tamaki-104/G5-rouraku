@@ -37,9 +37,21 @@ def split_multi(value: str) -> list:
     return [v.strip() for v in value.replace("／", "/").split("/") if v.strip()]
 
 
+def normalize_area(name: str) -> str:
+    """エリア名を比較用に正規化する。末尾の「市/区/町/村」を1文字落とし、
+    「渋谷」と「渋谷区」のような入力揺れを同一視できるようにする。
+    1文字だけの名前はそのまま返す(「区」等が空文字になるのを防ぐ)。"""
+    name = name.strip()
+    if len(name) >= 2 and name[-1] in "市区町村":
+        return name[:-1]
+    return name
+
+
 def _area_match(cond_area: str, prop_area: str) -> bool:
-    """希望エリア(複数可)に物件エリアが含まれるかを判定する。"""
-    return prop_area in split_multi(cond_area)
+    """希望エリア(複数可)に物件エリアが含まれるかを判定する。
+    末尾の市区町村の有無は問わない(「渋谷」でも「渋谷区」に一致する)。"""
+    wanted = {normalize_area(a) for a in split_multi(cond_area)}
+    return normalize_area(prop_area) in wanted
 
 
 def _layout_match(cond_layout: str, prop_layout: str) -> bool:
