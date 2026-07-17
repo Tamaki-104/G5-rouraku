@@ -508,7 +508,8 @@ _INDEX = """{% extends "base.html" %}
 
   <div class="field {% if errors and errors.budget %}has-error{% endif %}">
     <label for="budget">予算上限（円） <span class="req">必須</span></label>
-    <input type="number" id="budget" name="budget" placeholder="例：80000" min="1"
+    <input type="number" id="budget" name="budget" placeholder="例：80000"
+           min="1000" step="1000"
            value="{{ condition.budget if condition and condition.budget is not none else '' }}">
     {% if errors and errors.budget %}<small class="err">{{ errors.budget }}</small>{% endif %}
   </div>
