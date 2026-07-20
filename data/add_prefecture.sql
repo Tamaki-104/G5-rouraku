@@ -17,3 +17,14 @@ UPDATE property_conditions SET prefecture = '神奈川県'
 
 -- 確認用: 全行に prefecture が入っていること
 -- SELECT id, prefecture, area FROM property_conditions ORDER BY id;
+
+-- ── 希望条件（input_conditions）にも希望都道府県を追加 ──
+ALTER TABLE input_conditions
+    ADD COLUMN IF NOT EXISTS prefecture TEXT NOT NULL DEFAULT '';
+
+-- 既存データへ希望都道府県を設定（横浜のみ神奈川県、他は東京都）
+UPDATE input_conditions SET prefecture = '東京都'   WHERE prefecture = '';
+UPDATE input_conditions SET prefecture = '神奈川県' WHERE area LIKE '%横浜%';
+
+-- 確認用:
+-- SELECT id, prefecture, area FROM input_conditions ORDER BY id;

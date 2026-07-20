@@ -181,7 +181,8 @@ h2 { font-family: var(--font-display); font-weight: 700; font-size: 19px; letter
   font-size: 12.5px; color: var(--ink-soft); background: var(--surface-2);
   border: 1px solid var(--line); padding: 4px 11px; border-radius: 999px;
 }
-.tag.rent { color: var(--accent); font-weight: 700; background: var(--accent-soft); border-color: #cfe1d5; }
+/* 希望条件を満たした項目のタグに付ける(緑)。適合度計算の内訳(breakdown)と連動する */
+.tag.ok { color: var(--accent); font-weight: 700; background: var(--accent-soft); border-color: #cfe1d5; }
 .property-actions { display: flex; align-items: center; gap: 10px; margin-top: auto; }
 .property-body .btn { align-self: flex-start; }
 
@@ -585,11 +586,11 @@ _PROPOSALS = """{% extends "base.html" %}
         </div>
       </div>
       <div class="tags">
-        <span class="tag">{{ p.area }}</span>
-        <span class="tag">{{ p.layout }}</span>
-        <span class="tag rent">家賃 {{ '{:,}'.format(p.rent) }}円</span>
-        <span class="tag">駅徒歩{{ p.station_minutes }}分</span>
-        <span class="tag">ペット{{ '可' if p.pet_allowed else '不可' }}</span>
+        <span class="tag {% if p.breakdown.area %}ok{% endif %}">{{ p.area }}</span>
+        <span class="tag {% if p.breakdown.layout %}ok{% endif %}">{{ p.layout }}</span>
+        <span class="tag {% if p.breakdown.budget %}ok{% endif %}">家賃 {{ '{:,}'.format(p.rent) }}円</span>
+        <span class="tag {% if p.breakdown.station %}ok{% endif %}">駅徒歩{{ p.station_minutes }}分</span>
+        <span class="tag {% if p.breakdown.pet %}ok{% endif %}">ペット{{ '可' if p.pet_allowed else '不可' }}</span>
       </div>
       <div class="property-actions">
         <a class="btn primary small" href="{{ url_for('property_detail', property_id=p.id) }}">詳細・課題を確認</a>
@@ -747,7 +748,7 @@ _FAVORITES = """{% extends "base.html" %}
       <div class="tags">
         <span class="tag">{{ p.area }}</span>
         <span class="tag">{{ p.layout }}</span>
-        <span class="tag rent">家賃 {{ '{:,}'.format(p.rent) }}円</span>
+        <span class="tag">家賃 {{ '{:,}'.format(p.rent) }}円</span>
         <span class="tag">駅徒歩{{ p.station_minutes }}分</span>
         <span class="tag">ペット{{ '可' if p.pet_allowed else '不可' }}</span>
       </div>

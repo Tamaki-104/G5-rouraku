@@ -30,7 +30,8 @@ CREATE TABLE IF NOT EXISTS properties (
 -- ── 希望条件（Input Condition）────────────────────────────
 CREATE TABLE IF NOT EXISTS input_conditions (
     id              TEXT PRIMARY KEY,          -- 希望条件ID (例: IC0000001)
-    area            TEXT NOT NULL,             -- 希望エリア
+    prefecture      TEXT NOT NULL DEFAULT '',  -- 希望都道府県
+    area            TEXT NOT NULL,             -- 希望エリア（地区）
     layout          TEXT NOT NULL,             -- 希望の間取り
     station_minutes INTEGER,                   -- 駅からの距離
     pet_allowed     BOOLEAN NOT NULL DEFAULT FALSE  -- ペット許可

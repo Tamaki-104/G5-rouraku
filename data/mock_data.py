@@ -149,16 +149,17 @@ PROPERTIES = [
 ]
 
 # ── 希望条件（Input Condition）─────────────────────────────────
+# prefecture=希望都道府県。検索フォームの入力に対応する。
 INPUT_CONDITIONS = [
-    {"id": "IC0000001", "area": "新宿区/渋谷区", "layout": "1LDK",       "station_minutes": 20, "pet_allowed": True},
-    {"id": "IC0000002", "area": "池袋区",        "layout": "1LDK/2LDK", "station_minutes": 30, "pet_allowed": False},
-    {"id": "IC0000003", "area": "秋葉原区",      "layout": "1L以上",     "station_minutes": 5,  "pet_allowed": True},
-    {"id": "IC0000004", "area": "横浜区",        "layout": "2LDK以上",       "station_minutes": 10, "pet_allowed": False},
-    {"id": "IC0000005", "area": "中野区",        "layout": "1DK/1LDK",       "station_minutes": 40, "pet_allowed": False},
-    {"id": "IC0000006", "area": "台東区",        "layout": "1LDK/2LDK",      "station_minutes": 20, "pet_allowed": True},
-    {"id": "IC0000007", "area": "文京区",        "layout": "1LDK以上",       "station_minutes": 5,  "pet_allowed": False},
-    {"id": "IC0000008", "area": "足立区",        "layout": "2LDK/2LDK以上",  "station_minutes": 30, "pet_allowed": False},
-    {"id": "IC0000009", "area": "港区",          "layout": "2LDK/2LDK以上",  "station_minutes": 5,  "pet_allowed": True},
+    {"id": "IC0000001", "prefecture": "東京都",   "area": "新宿区/渋谷区", "layout": "1LDK",           "station_minutes": 20, "pet_allowed": True},
+    {"id": "IC0000002", "prefecture": "東京都",   "area": "池袋区",        "layout": "1LDK/2LDK",      "station_minutes": 30, "pet_allowed": False},
+    {"id": "IC0000003", "prefecture": "東京都",   "area": "秋葉原区",      "layout": "1L以上",         "station_minutes": 5,  "pet_allowed": True},
+    {"id": "IC0000004", "prefecture": "神奈川県", "area": "横浜区",        "layout": "2LDK以上",       "station_minutes": 10, "pet_allowed": False},
+    {"id": "IC0000005", "prefecture": "東京都",   "area": "中野区",        "layout": "1DK/1LDK",       "station_minutes": 40, "pet_allowed": False},
+    {"id": "IC0000006", "prefecture": "東京都",   "area": "台東区",        "layout": "1LDK/2LDK",      "station_minutes": 20, "pet_allowed": True},
+    {"id": "IC0000007", "prefecture": "東京都",   "area": "文京区",        "layout": "1LDK以上",       "station_minutes": 5,  "pet_allowed": False},
+    {"id": "IC0000008", "prefecture": "東京都",   "area": "足立区",        "layout": "2LDK/2LDK以上",  "station_minutes": 30, "pet_allowed": False},
+    {"id": "IC0000009", "prefecture": "東京都",   "area": "港区",          "layout": "2LDK/2LDK以上",  "station_minutes": 5,  "pet_allowed": True},
 ]
 
 # ── 入力情報（Input）──────────────────────────────────────────

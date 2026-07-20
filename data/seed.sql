@@ -20,11 +20,11 @@ INSERT INTO properties (id, property_condition_id, name, rent, building_type, de
 ON CONFLICT (id) DO NOTHING;
 
 -- 希望条件
-INSERT INTO input_conditions (id, area, layout, station_minutes, pet_allowed) VALUES
-  ('IC0000001', '新宿区/渋谷区', '1LDK',     20, TRUE),
-  ('IC0000002', '池袋区',        '1LDK/2LDK',30, FALSE),
-  ('IC0000003', '秋葉原区',      '1L以上',   5,  TRUE),
-  ('IC0000004', '横浜区',        '2LDK以上', 10, FALSE)
+INSERT INTO input_conditions (id, prefecture, area, layout, station_minutes, pet_allowed) VALUES
+  ('IC0000001', '東京都',   '新宿区/渋谷区', '1LDK',     20, TRUE),
+  ('IC0000002', '東京都',   '池袋区',        '1LDK/2LDK',30, FALSE),
+  ('IC0000003', '東京都',   '秋葉原区',      '1L以上',   5,  TRUE),
+  ('IC0000004', '神奈川県', '横浜区',        '2LDK以上', 10, FALSE)
 ON CONFLICT (id) DO NOTHING;
 
 -- 入力情報
